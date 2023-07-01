@@ -1,10 +1,10 @@
 import json
-import string
 from itertools import zip_longest
 
 import gspread
 
-def spreadsheet_get_hotels(gc, spreadsheet) -> list | None:
+
+def spreadsheet_get_hotels(gc, spreadsheet) -> list:
     sheet = gc.open_by_url(spreadsheet['url'])
     worksheet = sheet.get_worksheet(0)
     worksheet_value = worksheet.get_all_cells()
@@ -34,12 +34,19 @@ def spreadsheet_get_hotels(gc, spreadsheet) -> list | None:
     return zipped_list
 
 
-def hotel_checker(old_data: list, new_data: list) -> string:
+def hotel_checker(old_data: list, new_data: list) -> str:
     changes = ""
-    for row in new_data:
-        if row[1] != new_data[1]:
-            pass
+    for i in range(len(new_data)):
+        if new_data[i][1] != old_data[i][1] and new_data[i][3] == "":
+            old_data.insert(i, new_data[i])
+            changes += "- Добавлен доп. рейс на " + new_data[i][1] + "\n"
+        if new_data[i][3] != old_data[i][3]:
+            changes += f"- Группа {new_data[i][0]}/рейс {new_data[i][1]}: изменен отель: {new_data[i][3]}\n"
+        if new_data[i][2] != old_data[i][2]:
+            changes += f"- Группа {new_data[i][0]}/рейс {new_data[i][1]}: изменилось количество человек: {new_data[i][2]}\n"
+    print(changes)
     return changes
+
 
 if __name__ == '__main__':
     gc = gspread.service_account(filename='../data/service_acc.json')
@@ -47,10 +54,11 @@ if __name__ == '__main__':
     with open('../data/spreadsheets_data.json', 'r', encoding='utf-8') as f:
         config = json.load(f)
     spreadsheet_list = config["SPREADSHEETS"]
+    new_data = None
     for i, spreadsheet in enumerate(spreadsheet_list):
         new_data = spreadsheet_get_hotels(gc, spreadsheet)
-        # changes = hotel_checker(spreadsheet[i]["data"], new_data)
-        # print(changes)
+        if spreadsheet.get("data"):
+            changes = hotel_checker(spreadsheet["data"], new_data)
 
         config["SPREADSHEETS"][i]["data"] = new_data
         with open('../data/spreadsheets_data.json', 'w', encoding='utf-8') as f:
