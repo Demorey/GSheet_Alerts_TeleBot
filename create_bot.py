@@ -3,7 +3,7 @@ from aiogram import Bot
 from aiogram.dispatcher import Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-with open('config_data/config.json', 'r', encoding='utf-8') as f:
+with open('data/config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
 TIMER = int(config["TIMER"])
 bot = Bot(token=config["BOT_TOKEN"])

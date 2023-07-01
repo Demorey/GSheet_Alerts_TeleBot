@@ -42,9 +42,9 @@ def hotel_checker(old_data: list, new_data: list) -> string:
     return changes
 
 if __name__ == '__main__':
-    gc = gspread.service_account(filename='config_data/service_acc.json')
+    gc = gspread.service_account(filename='../data/service_acc.json')
 
-    with open('config_data/config.json', 'r', encoding='utf-8') as f:
+    with open('../data/spreadsheets_data.json', 'r', encoding='utf-8') as f:
         config = json.load(f)
     spreadsheet_list = config["SPREADSHEETS"]
     for i, spreadsheet in enumerate(spreadsheet_list):
@@ -53,5 +53,5 @@ if __name__ == '__main__':
         # print(changes)
 
         config["SPREADSHEETS"][i]["data"] = new_data
-        with open('config_data/config.json', 'w', encoding='utf-8') as f:
-            json.dump(config, f, ensure_ascii=False)
+        with open('../data/spreadsheets_data.json', 'w', encoding='utf-8') as f:
+            json.dump(config, f, ensure_ascii=False, indent=2)

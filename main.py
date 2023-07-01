@@ -4,8 +4,10 @@ from logging.handlers import RotatingFileHandler
 
 from aiogram.utils import executor
 from create_bot import dp, bot
+import handlers.message_handler
 
 if not os.path.exists("logs/debug_loger.log"):
+    os.makedirs("logs/")
     logs = open("logs/debug_loger.log", "w")
     logs.close()
 logging.basicConfig(level=logging.DEBUG, encoding='utf-8',
