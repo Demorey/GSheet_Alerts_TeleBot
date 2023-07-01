@@ -1,11 +1,11 @@
+import json
 from aiogram import Bot
-import os
-from dotenv import load_dotenv
 from aiogram.dispatcher import Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-load_dotenv()
-
-bot = Bot(token=os.getenv("BOT_TOKEN"))
+with open('config_data/config.json', 'r', encoding='utf-8') as f:
+    config = json.load(f)
+TIMER = int(config["TIMER"])
+bot = Bot(token=config["BOT_TOKEN"])
 dp = Dispatcher(bot, storage=MemoryStorage())
-TIMER = int(os.getenv("TIMER"))
+

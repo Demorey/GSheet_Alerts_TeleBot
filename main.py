@@ -1,6 +1,16 @@
-import asyncio
+import os
+import logging
+from logging.handlers import RotatingFileHandler
+
 from aiogram.utils import executor
 from create_bot import dp, bot
+
+if not os.path.exists("logs/debug_loger.log"):
+    logs = open("logs/debug_loger.log", "w")
+    logs.close()
+logging.basicConfig(level=logging.DEBUG, encoding='utf-8',
+                    handlers=[RotatingFileHandler('logs/debug_loger.log', maxBytes=5000000, backupCount=1)],
+                    format="%(asctime)s - [%(levelname)s] - %(funcName)s: %(lineno)d - %(message)s")
 
 
 async def on_startup(_):
