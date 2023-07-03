@@ -1,7 +1,31 @@
 import json
 from itertools import zip_longest
 
-import gspread
+
+async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, spreadsheet_data: dict) -> str | None:
+    sheet_name = await spreadsheet_get_name(gc, spreadsheet)
+    new_data = await spreadsheet_get_hotels(gc, spreadsheet)
+    result = None
+    if spreadsheet.get("data"):
+        changes = await changes_check(spreadsheet["data"], new_data)
+        if changes != "":
+            result = "<b>⚠️ Изменения в таблице: " + sheet_name + "</b>\n\n" + changes
+
+    # sheet = gc.open_by_url(spreadsheet['url'])
+    # worksheet = sheet.get_worksheet(0)
+    # worksheet.format("14", {
+    #     "backgroundColor": {
+    #         "red": 1.0,
+    #         "green": 1.0,
+    #         "blue": 0.0
+    #     }})
+
+    spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["name"] = sheet_name
+    spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["data"] = new_data
+    with open('data/spreadsheets_data.json', 'w', encoding='utf-8') as f:
+        json.dump(spreadsheet_data, f, ensure_ascii=False, indent=2)
+
+    return result
 
 
 async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
