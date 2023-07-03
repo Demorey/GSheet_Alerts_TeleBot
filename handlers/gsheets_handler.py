@@ -4,7 +4,14 @@ from itertools import zip_longest
 import gspread
 
 
-def spreadsheet_get_hotels(gc, spreadsheet) -> list:
+async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
+    sheet = gc.open_by_url(spreadsheet['url'])
+    worksheet = sheet.get_worksheet(0)
+    sheet_name = worksheet.acell("A1").value
+    return sheet_name
+
+
+async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> str and list:
     sheet = gc.open_by_url(spreadsheet['url'])
     worksheet = sheet.get_worksheet(0)
     worksheet_value = worksheet.get_all_cells()
