@@ -34,32 +34,17 @@ def spreadsheet_get_hotels(gc, spreadsheet) -> list:
     return zipped_list
 
 
-def hotel_checker(old_data: list, new_data: list) -> str:
+async def changes_check(old_data: list, new_data: list) -> str:
     changes = ""
     for i in range(len(new_data)):
+        changes_in_row = ""
         if new_data[i][1] != old_data[i][1] and new_data[i][3] == "":
             old_data.insert(i, new_data[i])
-            changes += "- Добавлен доп. рейс на " + new_data[i][1] + "\n"
+            changes_in_row += f"- Добавлен доп. рейс на {new_data[i][1]}\n"
         if new_data[i][3] != old_data[i][3]:
-            changes += f"- Группа {new_data[i][0]}/рейс {new_data[i][1]}: изменен отель: {new_data[i][3]}\n"
+            changes_in_row += f"- Изменен отель - {new_data[i][3]}\n"
         if new_data[i][2] != old_data[i][2]:
-            changes += f"- Группа {new_data[i][0]}/рейс {new_data[i][1]}: изменилось количество человек: {new_data[i][2]}\n"
-    print(changes)
+            changes_in_row += f"- Изменилось количество человек - {new_data[i][2]}\n"
+        if changes_in_row != "":
+            changes += f"Группа {new_data[i][0]} / Рейс {new_data[i][1]}:\n" + changes_in_row + "\n"
     return changes
-
-
-if __name__ == '__main__':
-    gc = gspread.service_account(filename='../data/service_acc.json')
-
-    with open('../data/spreadsheets_data.json', 'r', encoding='utf-8') as f:
-        config = json.load(f)
-    spreadsheet_list = config["SPREADSHEETS"]
-    new_data = None
-    for i, spreadsheet in enumerate(spreadsheet_list):
-        new_data = spreadsheet_get_hotels(gc, spreadsheet)
-        if spreadsheet.get("data"):
-            changes = hotel_checker(spreadsheet["data"], new_data)
-
-        config["SPREADSHEETS"][i]["data"] = new_data
-        with open('../data/spreadsheets_data.json', 'w', encoding='utf-8') as f:
-            json.dump(config, f, ensure_ascii=False, indent=2)
