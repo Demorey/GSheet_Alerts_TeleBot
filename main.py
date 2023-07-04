@@ -28,6 +28,7 @@ async def on_startup(_):
 
 
 async def task():
+    await asyncio.sleep(5)
     while True:
         gc = gspread.service_account(filename='data/service_acc.json')
 
@@ -38,7 +39,6 @@ async def task():
             result = await spreadsheet_check(gc, i, spreadsheet, spreadsheet_data)
             if result:
                 await notification_sender.send_notification(result, spreadsheet["url"])
-
         await asyncio.sleep(TIMER)
 
 
