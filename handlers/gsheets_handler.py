@@ -11,15 +11,6 @@ async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, sprea
         if changes != "":
             result = "<b>⚠️ Изменения в таблице: " + sheet_name + "</b>\n\n" + changes
 
-    # sheet = gc.open_by_url(spreadsheet['url'])
-    # worksheet = sheet.get_worksheet(0)
-    # worksheet.format("14", {
-    #     "backgroundColor": {
-    #         "red": 1.0,
-    #         "green": 1.0,
-    #         "blue": 0.0
-    #     }})
-
     spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["name"] = sheet_name
     spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["data"] = new_data
     with open('data/spreadsheets_data.json', 'w', encoding='utf-8') as f:
@@ -69,6 +60,10 @@ async def changes_check(old_data: list, new_data: list) -> str:
     changes = ""
     for i in range(len(new_data)):
         changes_in_row = ""
+        # Пропускаем строку если ее не успели заполнить
+        if new_data[i][1] == "":
+            continue
+
         # убираем удаленную строку
         if (len(new_data) < len(old_data)) and (new_data[i][0] != old_data[i][0] or new_data[i][1] != old_data[i][1]):
             changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Рейс удален\n\n"
