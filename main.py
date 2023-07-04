@@ -10,7 +10,7 @@ import handlers.message_handler
 from aiogram.utils import executor
 
 import notification_sender
-from create_bot import dp, bot, TIMER
+from create_bot import dp, bot, TIMER, GROUP_ID
 from handlers.gsheets_handler import spreadsheet_check
 
 if not os.path.exists("logs/debug_loger.log"):
@@ -38,7 +38,10 @@ async def task():
         for i, spreadsheet in enumerate(spreadsheet_list):
             result = await spreadsheet_check(gc, i, spreadsheet, spreadsheet_data)
             if result:
-                await notification_sender.send_notification(result, spreadsheet["url"])
+                group_id = spreadsheet.get('group_id')
+                if not group_id:
+                    group_id = GROUP_ID
+                await notification_sender.send_notification(group_id, result, spreadsheet["url"])
         await asyncio.sleep(TIMER)
 
 
