@@ -13,7 +13,7 @@ import notification_sender
 from create_bot import dp, bot, TIMER, GROUP_ID
 from handlers.gsheets_handler import spreadsheet_check
 
-if not os.path.exists("logs/debug_loger.log"):
+if not os.path.exists("logs/"):
     os.makedirs("logs/")
     logs = open("logs/debug_loger.log", "w")
     logs.close()
