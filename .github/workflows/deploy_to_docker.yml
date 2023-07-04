@@ -1,5 +1,6 @@
 name: Docker Image CI
 
+
 on:
   push:
     branches: [ "main" ]
@@ -44,3 +45,4 @@ jobs:
                     -v ./data:/tur_region_bot/data \
                     demorey/tur_region_bot:v1
                     rm -rf build/
+                  
