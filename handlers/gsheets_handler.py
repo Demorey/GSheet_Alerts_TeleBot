@@ -64,16 +64,18 @@ async def changes_check(old_data: list, new_data: list) -> str:
         if new_data[i][1] == "":
             continue
 
-        # убираем удаленную строку
-        if (len(new_data) < len(old_data)) and (new_data[i][0] != old_data[i][0] or new_data[i][1] != old_data[i][1]):
-            changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Рейс удален\n\n"
-            del old_data[i]
-            i -= 1
-            continue
+        if new_data[i][1] != old_data[i][1]:
+            # убираем удаленную строку
+            if new_data[i][0] != old_data[i][0]:
+                changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Рейс удален\n\n"
+                del old_data[i]
+                i -= 1
+                continue
 
-        if new_data[i][1] != old_data[i][1] and new_data[i][3] == "":
-            old_data.insert(i, new_data[i])
-            changes_in_row += f"- Добавлен доп. рейс на {new_data[i][1]}\n"
+            if new_data[i][3] == "":
+                old_data.insert(i, new_data[i])
+                changes_in_row += f"- Добавлен доп. рейс на {new_data[i][1]}\n"
+
         if new_data[i][3] != old_data[i][3]:
             changes_in_row += f"- Изменен отель c {old_data[i][3]} на {new_data[i][3]}\n"
         if new_data[i][2] != old_data[i][2]:
