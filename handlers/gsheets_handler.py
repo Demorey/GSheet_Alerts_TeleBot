@@ -63,7 +63,8 @@ async def changes_check(old_data: list, new_data: list) -> str:
         # Пропускаем строку если ее не успели заполнить
         if new_data[i][1] == "":
             continue
-
+        if i > len(old_data) - 1:
+            continue
         if new_data[i][1] != old_data[i][1]:
             # убираем удаленную строку
             if new_data[i][0] != old_data[i][0]:
