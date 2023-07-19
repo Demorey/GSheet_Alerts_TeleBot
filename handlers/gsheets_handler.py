@@ -29,17 +29,17 @@ async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
 async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> str and list:
     sheet = gc.open_by_url(spreadsheet['url'])
     worksheet = sheet.get_worksheet(0)
-    worksheet_value = worksheet.get_all_cells()
+    worksheet_col_names = worksheet.row_values(1)
     hotel_column_index = None
     zasel_column_index = None
     chel_column_index = None
-    for row in worksheet_value:
-        if row.value.lower().startswith("отел"):
-            hotel_column_index = row.col
-        elif row.value.lower() == "заселение":
-            zasel_column_index = row.col
-        elif row.value.lower().count("человек") != 0:
-            chel_column_index = row.col
+    for i in range(len(worksheet_col_names)):
+        if worksheet_col_names[i].lower().startswith("отел"):
+            hotel_column_index = i+1
+        elif worksheet_col_names[i].lower() == "заселение":
+            zasel_column_index = i+1
+        elif worksheet_col_names[i].lower().count("человек") != 0:
+            chel_column_index = i+1
         if hotel_column_index and zasel_column_index and chel_column_index:
             break
     if hotel_column_index is None \
