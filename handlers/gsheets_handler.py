@@ -31,7 +31,7 @@ async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
     return sheet_name
 
 
-async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | string:
+async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
     sheet = gc.open_by_url(spreadsheet['url'])
     worksheet = sheet.get_worksheet(0)
     worksheet_col_names = worksheet.row_values(1)
