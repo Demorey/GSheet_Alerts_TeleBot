@@ -1,10 +1,15 @@
 import json
+import logging
+import string
 from itertools import zip_longest
 
 
 async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, spreadsheet_data: dict) -> str | None:
     sheet_name = await spreadsheet_get_name(gc, spreadsheet)
     new_data = await spreadsheet_get_hotels(gc, spreadsheet)
+    if new_data.startwith("Error"):
+        result = new_data.split(":")[1]
+        return result
     result = None
     if spreadsheet.get("data"):
         changes = await changes_check(spreadsheet["data"], new_data)
@@ -26,26 +31,31 @@ async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
     return sheet_name
 
 
-async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> str and list:
+async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | string:
     sheet = gc.open_by_url(spreadsheet['url'])
     worksheet = sheet.get_worksheet(0)
     worksheet_col_names = worksheet.row_values(1)
     hotel_column_index = None
     zasel_column_index = None
     chel_column_index = None
-    for i in range(len(worksheet_col_names)):
-        if worksheet_col_names[i].lower().startswith("отел"):
-            hotel_column_index = i+1
-        elif worksheet_col_names[i].lower() == "заселение":
-            zasel_column_index = i+1
-        elif worksheet_col_names[i].lower().count("человек") != 0:
-            chel_column_index = i+1
-        if hotel_column_index and zasel_column_index and chel_column_index:
-            break
-    if hotel_column_index is None \
-            or zasel_column_index is None \
-            or chel_column_index is None:
-        return None
+    i = 0
+    try:
+        for i in range(len(worksheet_col_names)):
+            if worksheet_col_names[i].lower().startswith("отел"):
+                hotel_column_index = i+1
+            elif worksheet_col_names[i].lower() == "заселение":
+                zasel_column_index = i+1
+            elif worksheet_col_names[i].lower().count("человек") != 0:
+                chel_column_index = i+1
+            if hotel_column_index and zasel_column_index and chel_column_index:
+                break
+        if hotel_column_index is None \
+                or zasel_column_index is None \
+                or chel_column_index is None:
+            return None
+    except IndexError:
+        logging.error(f"Ошибка в таблице {spreadsheet['url']} на строке {i}")
+        return f"Error:Ошибка в таблице {spreadsheet['url']} на строке {i}"
     group_names = worksheet.col_values(1)[1:]
     zasel_dates = worksheet.col_values(zasel_column_index)[1:]
     chelovek = worksheet.col_values(chel_column_index)[1:]
