@@ -1,14 +1,13 @@
 import json
 import logging
-import string
 from itertools import zip_longest
 
 
 async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, spreadsheet_data: dict) -> str | None:
     sheet_name = await spreadsheet_get_name(gc, spreadsheet)
     new_data = await spreadsheet_get_hotels(gc, spreadsheet)
-    if new_data.startwith("Error"):
-        result = new_data.split(":")[1]
+    if type(new_data) is str:
+        result = new_data
         return result
     result = None
     if spreadsheet.get("data"):
@@ -55,7 +54,7 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
             return None
     except IndexError:
         logging.error(f"Ошибка в таблице {spreadsheet['url']} на строке {i}")
-        return f"Error:Ошибка в таблице {spreadsheet['url']} на строке {i}"
+        return f"Ошибка в таблице {spreadsheet['url']} на строке {i}"
     group_names = worksheet.col_values(1)[1:]
     zasel_dates = worksheet.col_values(zasel_column_index)[1:]
     chelovek = worksheet.col_values(chel_column_index)[1:]
