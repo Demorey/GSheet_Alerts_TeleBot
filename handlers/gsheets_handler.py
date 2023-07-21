@@ -41,11 +41,11 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
     try:
         for i in range(len(worksheet_col_names)):
             if worksheet_col_names[i].lower().startswith("отел"):
-                hotel_column_index = i+1
+                hotel_column_index = i + 1
             elif worksheet_col_names[i].lower() == "заселение":
-                zasel_column_index = i+1
+                zasel_column_index = i + 1
             elif worksheet_col_names[i].lower().count("человек") != 0:
-                chel_column_index = i+1
+                chel_column_index = i + 1
             if hotel_column_index and zasel_column_index and chel_column_index:
                 break
         if hotel_column_index is None \
@@ -67,24 +67,27 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
 
 async def changes_check(old_data: list, new_data: list) -> str:
     changes = ""
-    for i in range(len(new_data)):
+    i = 0
+    while i < len(new_data):
         changes_in_row = ""
         # Пропускаем строку если ее не успели заполнить
         if new_data[i][1] == "":
+            i += 1
             continue
         if i > len(old_data) - 1:
+            i += 1
             continue
         if new_data[i][1] != old_data[i][1]:
             # убираем удаленную строку
-            if new_data[i][0] != old_data[i][0]:
+            if new_data[i][0] != old_data[i][0] and new_data[i][0] == old_data[i + 1][0]:
                 changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Рейс удален\n\n"
                 del old_data[i]
-                i -= 1
                 continue
 
             if new_data[i][3] == "":
                 old_data.insert(i, new_data[i])
-                changes_in_row += f"- Добавлен доп. рейс на {new_data[i][1]}\n"
+                changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Добавлен доп. рейс на {new_data[i][1]}\n"
+                continue
 
         if new_data[i][3] != old_data[i][3]:
             changes_in_row += f"- Изменен отель c {old_data[i][3]} на {new_data[i][3]}\n"
@@ -92,4 +95,5 @@ async def changes_check(old_data: list, new_data: list) -> str:
             changes_in_row += f"- Изменилось количество человек - {new_data[i][2]}\n"
         if changes_in_row != "":
             changes += f"Группа {new_data[i][0]} / Рейс {new_data[i][1]}:\n" + changes_in_row + "\n"
+        i += 1
     return changes
