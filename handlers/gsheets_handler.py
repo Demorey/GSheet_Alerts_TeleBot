@@ -1,6 +1,9 @@
 import json
 import logging
 from itertools import zip_longest
+from time import sleep
+
+import gspread.exceptions
 
 
 async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, spreadsheet_data: dict) -> str | None:
@@ -31,7 +34,17 @@ async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
 
 
 async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
-    sheet = gc.open_by_url(spreadsheet['url'])
+    sheet = None
+    for attempt_no in range(3):
+        try:
+            sheet = gc.open_by_url(spreadsheet['url'])
+            break
+        except gspread.exceptions.APIError:
+            if attempt_no < 3:
+                sleep(30*(1+attempt_no))
+    if not sheet:
+        logging.error("Ошибка при запросе к Google API")
+        return "Ошибка при запросе к Google API"
     worksheet = sheet.get_worksheet(0)
     worksheet_col_names = worksheet.row_values(1)
     hotel_column_index = None
