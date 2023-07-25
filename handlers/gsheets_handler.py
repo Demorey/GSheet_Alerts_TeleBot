@@ -27,7 +27,17 @@ async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, sprea
 
 
 async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
-    sheet = gc.open_by_url(spreadsheet['url'])
+    sheet = None
+    for attempt_no in range(3):
+        try:
+            sheet = gc.open_by_url(spreadsheet['url'])
+            break
+        except gspread.exceptions.APIError:
+            if attempt_no < 3:
+                sleep(30 * (1 + attempt_no))
+    if not sheet:
+        logging.error("Ошибка при запросе к Google API")
+        return "Ошибка при запросе к Google API"
     worksheet = sheet.get_worksheet(0)
     sheet_name = worksheet.acell("A1").value
     return sheet_name
