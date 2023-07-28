@@ -31,16 +31,17 @@ async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
     for attempt_no in range(3):
         try:
             sheet = gc.open_by_url(spreadsheet['url'])
-            break
+            worksheet = sheet.get_worksheet(0)
+            sheet_name = worksheet.acell("A1").value
+            return sheet_name
         except gspread.exceptions.APIError:
             if attempt_no < 3:
                 sleep(30 * (1 + attempt_no))
     if not sheet:
         logging.error("Ошибка при запросе к Google API")
         return "Ошибка при запросе к Google API"
-    worksheet = sheet.get_worksheet(0)
-    sheet_name = worksheet.acell("A1").value
-    return sheet_name
+
+
 
 
 async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
@@ -48,6 +49,8 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
     for attempt_no in range(3):
         try:
             sheet = gc.open_by_url(spreadsheet['url'])
+            worksheet = sheet.get_worksheet(0)
+            worksheet_col_names = worksheet.row_values(1)
             break
         except gspread.exceptions.APIError:
             if attempt_no < 3:
@@ -55,8 +58,7 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
     if not sheet:
         logging.error("Ошибка при запросе к Google API")
         return "Ошибка при запросе к Google API"
-    worksheet = sheet.get_worksheet(0)
-    worksheet_col_names = worksheet.row_values(1)
+
     hotel_column_index = None
     zasel_column_index = None
     chel_column_index = None
