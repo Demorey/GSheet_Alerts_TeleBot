@@ -104,7 +104,7 @@ async def changes_check(old_data: list, new_data: list) -> str:
             continue
         if new_data[i][1] != old_data[i][1]:
             # убираем удаленную строку
-            if new_data[i][0] != old_data[i][0] and new_data[i][0] == old_data[i + 1][0]:
+            if new_data[i][0] != old_data[i][0] and i < len(old_data)-1 and new_data[i][0] == old_data[i + 1][0]:
                 changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Рейс удален\n\n"
                 del old_data[i]
                 continue
