@@ -46,6 +46,8 @@ async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
 
 async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
     sheet = None
+    worksheet = None
+    worksheet_col_names = []
     for attempt_no in range(3):
         try:
             sheet = gc.open_by_url(spreadsheet['url'])
@@ -55,7 +57,7 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
         except gspread.exceptions.APIError:
             if attempt_no < 3:
                 sleep(30*(1+attempt_no))
-    if not sheet:
+    if not sheet or not worksheet or not worksheet_col_names:
         logging.error("Ошибка при запросе к Google API")
         return "Ошибка при запросе к Google API"
 
