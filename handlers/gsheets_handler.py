@@ -42,8 +42,6 @@ async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
         return "Ошибка при запросе к Google API"
 
 
-
-
 async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
     sheet = None
     worksheet = None
@@ -56,7 +54,7 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
             break
         except gspread.exceptions.APIError:
             if attempt_no < 3:
-                sleep(30*(1+attempt_no))
+                sleep(30 * (1 + attempt_no))
     if not sheet or not worksheet or not worksheet_col_names:
         logging.error("Ошибка при запросе к Google API")
         return "Ошибка при запросе к Google API"
@@ -106,14 +104,14 @@ async def changes_check(old_data: list, new_data: list) -> str:
             continue
         if new_data[i][1] != old_data[i][1]:
             # убираем удаленную строку
-            if new_data[i][0] != old_data[i][0] and i < len(old_data)-1 and new_data[i][0] == old_data[i + 1][0]:
+            if new_data[i][0] != old_data[i][0] and i < len(old_data) - 1 and new_data[i][0] == old_data[i + 1][0]:
                 changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Рейс удален\n\n"
                 del old_data[i]
                 continue
 
             if new_data[i][3] == "":
                 old_data.insert(i, new_data[i])
-                changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Добавлен доп. рейс на {new_data[i][1]}\n"
+                changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Добавлен доп. рейс на {new_data[i][1]}\n\n"
                 continue
 
         if new_data[i][3] != old_data[i][3]:
