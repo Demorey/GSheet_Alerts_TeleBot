@@ -43,6 +43,9 @@ async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
         except ValueError:
             if attempt_no < 3:
                 sleep(30 * (1 + attempt_no))
+            else:
+                sheet_name = ""
+                return sheet_name
     if not sheet:
         logging.error("Ошибка при запросе к Google API")
         return "Ошибка при запросе к Google API"
