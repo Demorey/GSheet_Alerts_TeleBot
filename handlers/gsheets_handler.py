@@ -9,7 +9,7 @@ import gspread.exceptions
 async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, spreadsheet_data: dict) -> str | None:
     sheet_name = await spreadsheet_get_name(gc, spreadsheet)
     new_data = await spreadsheet_get_hotels(gc, spreadsheet)
-    if type(new_data) is str:
+    if type(new_data) is str and sheet_name is str:
         result = new_data
         return result
     result = None
@@ -33,8 +33,14 @@ async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
             sheet = gc.open_by_url(spreadsheet['url'])
             worksheet = sheet.get_worksheet(0)
             sheet_name = worksheet.acell("A1").value
-            return sheet_name
+            if sheet_name is str:
+                return sheet_name
+            else:
+                raise ValueError
         except gspread.exceptions.APIError:
+            if attempt_no < 3:
+                sleep(30 * (1 + attempt_no))
+        except ValueError:
             if attempt_no < 3:
                 sleep(30 * (1 + attempt_no))
     if not sheet:
