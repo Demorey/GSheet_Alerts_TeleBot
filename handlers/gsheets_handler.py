@@ -114,6 +114,7 @@ async def changes_check(old_data: list, new_data: list) -> str:
             if new_data[i][3] == "":
                 old_data.insert(i, new_data[i])
                 changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Добавлен доп. рейс на {new_data[i][1]}\n\n"
+                i += 1
                 continue
 
         if new_data[i][3] != old_data[i][3]:
