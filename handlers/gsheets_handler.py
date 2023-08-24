@@ -9,7 +9,7 @@ import gspread.exceptions
 async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, spreadsheet_data: dict) -> str | None:
     sheet_name = await spreadsheet_get_name(gc, spreadsheet)
     new_data = await spreadsheet_get_hotels(gc, spreadsheet)
-    if type(new_data) is str and sheet_name is str:
+    if type(new_data) is str and type(sheet_name) is str:
         result = new_data
         return result
     result = None
@@ -99,6 +99,10 @@ async def changes_check(old_data: list, new_data: list) -> str:
         changes_in_row = ""
         # Пропускаем строку если ее не успели заполнить
         if new_data[i][1] == "":
+            if new_data[i][0].lower().count("новый год"):
+                old_data.insert(i, new_data[i])
+            if new_data[i][0] == "" and new_data[i][1] == "" and new_data[i][2] == "" and new_data[i][3] == "":
+                old_data.insert(i, new_data[i])
             i += 1
             continue
         if i > len(old_data) - 1:
