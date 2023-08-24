@@ -97,24 +97,29 @@ async def changes_check(old_data: list, new_data: list) -> str:
     i = 0
     while i < len(new_data):
         changes_in_row = ""
-        # Пропускаем строку если ее не успели заполнить
+
+        if new_data[i][0].lower().count("новый год"):
+            old_data.insert(i, new_data[i])
+            i += 1
+            continue
+        if new_data[i][0] == "" and new_data[i][1] == "" and new_data[i][2] == "" and new_data[i][3] == "":
+            old_data.insert(i, new_data[i])
+            i += 1
+            continue
         if new_data[i][1] == "":
-            if new_data[i][0].lower().count("новый год"):
-                old_data.insert(i, new_data[i])
-            if new_data[i][0] == "" and new_data[i][1] == "" and new_data[i][2] == "" and new_data[i][3] == "":
-                old_data.insert(i, new_data[i])
             i += 1
             continue
         if i > len(old_data) - 1:
             i += 1
             continue
+
         if new_data[i][1] != old_data[i][1]:
             # убираем удаленную строку
             if new_data[i][0] != old_data[i][0] and i < len(old_data) - 1 and new_data[i][0] == old_data[i + 1][0]:
                 changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Рейс удален\n\n"
                 del old_data[i]
                 continue
-
+            # Добавляем новую строку если это новый рейс
             if new_data[i][3] == "":
                 old_data.insert(i, new_data[i])
                 changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Добавлен доп. рейс на {new_data[i][1]}\n\n"
