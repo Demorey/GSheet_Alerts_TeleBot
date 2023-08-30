@@ -82,14 +82,21 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
     except IndexError:
         logging.error(f"Ошибка в таблице {spreadsheet['url']} на строке {i}")
         return f"Ошибка в таблице {spreadsheet['url']} на строке {i}"
-    group_names = worksheet.col_values(1)[1:]
-    zasel_dates = worksheet.col_values(zasel_column_index)[1:]
-    chelovek = worksheet.col_values(chel_column_index)[1:]
-    hotel_names = worksheet.col_values(hotel_column_index)[1:]
 
-    zipped_list = list(zip_longest(group_names, zasel_dates, chelovek, hotel_names, fillvalue=''))
-
-    return zipped_list
+    for attempt_no in range(3):
+        try:
+            group_names = worksheet.col_values(1)[1:]
+            zasel_dates = worksheet.col_values(zasel_column_index)[1:]
+            chelovek = worksheet.col_values(chel_column_index)[1:]
+            hotel_names = worksheet.col_values(hotel_column_index)[1:]
+            zipped_list = list(zip_longest(group_names, zasel_dates, chelovek, hotel_names, fillvalue=''))
+            return zipped_list
+        except gspread.exceptions.APIError:
+            if attempt_no < 3:
+                sleep(30 * (1 + attempt_no))
+    if not sheet or not worksheet or not worksheet_col_names:
+        logging.error("Ошибка при запросе к Google API")
+        return "Ошибка при запросе к Google API"
 
 
 async def changes_check(old_data: list, new_data: list) -> str:
