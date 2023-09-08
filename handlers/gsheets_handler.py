@@ -2,6 +2,7 @@ import json
 import logging
 from itertools import zip_longest
 from time import sleep
+from typing import List, Any
 
 import gspread.exceptions
 
@@ -9,16 +10,20 @@ import gspread.exceptions
 async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, spreadsheet_data: dict) -> str | None:
     sheet_name = await spreadsheet_get_name(gc, spreadsheet)
     new_data = await spreadsheet_get_hotels(gc, spreadsheet)
+    worksheet_name = await spreadsheet_get_worksheet_name(gc, spreadsheet)
     if type(new_data) is str and type(sheet_name) is str:
         result = new_data
         return result
     result = None
     if spreadsheet.get("data"):
         changes = await changes_check(spreadsheet["data"], new_data)
-        if changes != "":
+        if (changes != "" and
+                worksheet_name == spreadsheet_data["SPREADSHEETS"][spreadsheet_index].get("worksheet_name",
+                                                                                          worksheet_name)):
             result = "<b>⚠️ Изменения в таблице: " + sheet_name + "</b>\n\n" + changes
 
     spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["name"] = sheet_name
+    spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["worksheet_name"] = worksheet_name
     spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["data"] = new_data
     with open('data/spreadsheets_data.json', 'w', encoding='utf-8') as f:
         json.dump(spreadsheet_data, f, ensure_ascii=False, indent=2)
@@ -44,7 +49,20 @@ async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
         return "Ошибка при запросе к Google API"
 
 
-async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> list | str:
+async def spreadsheet_get_worksheet_name(gc, spreadsheet: dict) -> str:
+    worksheet_name = None
+    for attempt_no in range(3):
+        try:
+            sheet = gc.open_by_url(spreadsheet['url'])
+            worksheet_name = sheet.sheet1.title
+            break
+        except gspread.exceptions.APIError:
+            if attempt_no < 3:
+                sleep(30 * (1 + attempt_no))
+    return worksheet_name
+
+
+async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> str | None | list[Any]:
     sheet = None
     worksheet = None
     worksheet_col_names = []
