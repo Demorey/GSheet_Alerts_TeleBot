@@ -30,19 +30,22 @@ async def on_startup(_):
 async def task():
     await asyncio.sleep(5)
     while True:
-        gc = gspread.service_account(filename='data/service_acc.json')
+        try:
+            gc = gspread.service_account(filename='data/service_acc.json')
 
-        with open('data/spreadsheets_data.json', 'r', encoding='utf-8') as f:
-            spreadsheet_data = json.load(f)
-        spreadsheet_list = spreadsheet_data["SPREADSHEETS"]
-        for i, spreadsheet in enumerate(spreadsheet_list):
-            result = await spreadsheet_check(gc, i, spreadsheet, spreadsheet_data)
-            if result:
-                group_id = spreadsheet.get('group_id')
-                if not group_id:
-                    group_id = GROUP_ID
-                await notification_sender.send_notification(group_id, result, spreadsheet["url"])
-        await asyncio.sleep(TIMER)
+            with open('data/spreadsheets_data.json', 'r', encoding='utf-8') as f:
+                spreadsheet_data = json.load(f)
+            spreadsheet_list = spreadsheet_data["SPREADSHEETS"]
+            for i, spreadsheet in enumerate(spreadsheet_list):
+                result = await spreadsheet_check(gc, i, spreadsheet, spreadsheet_data)
+                if result:
+                    group_id = spreadsheet.get('group_id')
+                    if not group_id:
+                        group_id = GROUP_ID
+                    await notification_sender.send_notification(group_id, result, spreadsheet["url"])
+            await asyncio.sleep(TIMER)
+        except asyncio.TimeoutError:
+            await asyncio.sleep(600)
 
 
 if __name__ == '__main__':
