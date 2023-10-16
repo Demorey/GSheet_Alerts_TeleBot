@@ -44,7 +44,7 @@ async def task():
                         group_id = GROUP_ID
                     await notification_sender.send_notification(group_id, result, spreadsheet["url"])
             await asyncio.sleep(TIMER)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             await asyncio.sleep(600)
 
 
