@@ -14,7 +14,7 @@ jobs:
           docker build --no-cache -t demorey/tur_region_bot:v1 .
           docker save -o tur_region_bot.tar demorey/tur_region_bot:v1
       - name: scp docker image to DO
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
