@@ -20,8 +20,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: 22
-          source: tur_region_bot.tar
-          target: /docker_containers/tur_region_bot/build
+          source: "tur_region_bot.tar"
+          target: "/docker_containers/tur_region_bot/build"
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.0.3
         with:
