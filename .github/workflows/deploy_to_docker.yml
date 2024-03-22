@@ -13,6 +13,7 @@ jobs:
         run: |
           docker build --no-cache -t demorey/tur_region_bot:v1 .
           docker save -o tur_region_bot.tar demorey/tur_region_bot:v1
+          chmod 664 tur_region_bot.tar
       - name: scp docker image to DO
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -20,8 +21,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: 22
-          source: "tur_region_bot.tar"
-          target: "/docker_containers/tur_region_bot/build"
+          source: tur_region_bot.tar
+          target: /docker_containers/tur_region_bot/build
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.0.3
         with:
