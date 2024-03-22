@@ -30,25 +30,32 @@ async def task():
             spreadsheet_list = spreadsheet_data["SPREADSHEETS"]
             for i, spreadsheet in enumerate(spreadsheet_list):
                 result = await spreadsheet_check(gc, i, spreadsheet, spreadsheet_data)
-                if result and result.startswith("Ошибка") is False:
+                if not result:
+                    continue
+                if result.startswith("Ошибка"):
+                    await notification_sender.send_notification(ADMIN_ID, result, spreadsheet["url"])
+                else:
                     group_id = spreadsheet.get('group_id')
                     if not group_id:
                         group_id = GROUP_ID
                     await notification_sender.send_notification(group_id, result, spreadsheet["url"])
-                else:
-                    await notification_sender.send_notification(ADMIN_ID, result, spreadsheet["url"])
             await asyncio.sleep(TIMER)
         except TimeoutError:
             await asyncio.sleep(600)
 
 
-async def main():
+async def bot_start():
     try:
         bot_name = await bot.get_me()
         print('Запущен бот: ' + bot_name.first_name)
         await dp.start_polling(bot)
     finally:
         await bot.session.close()
+
+
+async def main():
+    tasks = [task(), bot_start()]
+    await asyncio.gather(*tasks)
 
 
 if __name__ == '__main__':
