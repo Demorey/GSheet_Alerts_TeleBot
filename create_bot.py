@@ -8,4 +8,3 @@ GROUP_ID = config["GROUP_ID"]
 ADMIN_ID = config["ADMIN_ID"]
 bot = Bot(token=config["BOT_TOKEN"])
 dp = Dispatcher(bot=bot)
-
