@@ -48,9 +48,17 @@ async def task():
             await asyncio.sleep(600)
 
 
-if __name__ == '__main__':
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.create_task(task())
+async def main():
+    try:
+        bot_name = await bot.get_me()
+        print('Запущен бот: ' + bot_name.first_name)
+        await dp.start_polling(bot)
+    finally:
+        await bot.session.close()
 
-    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+
+if __name__ == '__main__':
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        print('Bot stopped!')
