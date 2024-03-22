@@ -17,6 +17,9 @@ async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, sprea
     result = None
     if spreadsheet.get("data"):
         changes = await changes_check(spreadsheet["data"], new_data)
+        if changes.startswith("Ошибка"):
+            result = f"Ошибка в таблице {sheet_name}\n" + changes + "\n\n"
+            return result
         if (changes != "" and
                 worksheet_name == spreadsheet_data["SPREADSHEETS"][spreadsheet_index].get("worksheet_name",
                                                                                           worksheet_name)):
@@ -120,43 +123,46 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> str | None | list[Any
 async def changes_check(old_data: list, new_data: list) -> str:
     changes = ""
     i = 0
-    while i < len(new_data):
-        changes_in_row = ""
+    try:
+        while i < len(new_data):
+            changes_in_row = ""
 
-        if new_data[i][1] == "":
+            if new_data[i][1] == "":
+                i += 1
+                continue
+            if i > len(old_data) - 1:
+                old_data.append(["", "", "", ""])
+
+            if new_data[i][1] != old_data[i][1]:
+
+                if new_data[i][0].lower().count("новый год"):
+                    old_data.insert(i, new_data[i])
+                    i += 1
+                    continue
+                if new_data[i][0] == "" and new_data[i][1] == "" and new_data[i][2] == "" and new_data[i][3] == "":
+                    old_data.insert(i, new_data[i])
+                    i += 1
+                    continue
+
+                # убираем удаленную строку
+                if new_data[i][0] != old_data[i][0] and i < len(old_data) - 1 and new_data[i][0] == old_data[i + 1][0]:
+                    changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Рейс удален\n\n"
+                    del old_data[i]
+                    continue
+                # Добавляем новую строку если это новый рейс
+                if new_data[i][3] == "":
+                    old_data.insert(i, new_data[i])
+                    changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Добавлен доп. рейс на {new_data[i][1]}\n\n"
+                    i += 1
+                    continue
+
+            if new_data[i][3] != old_data[i][3]:
+                changes_in_row += f"- Изменен отель c {old_data[i][3]} на {new_data[i][3]}\n"
+            if new_data[i][2] != old_data[i][2]:
+                changes_in_row += f"- Изменилось количество человек - {new_data[i][2]}\n"
+            if changes_in_row != "":
+                changes += f"Группа {new_data[i][0]} / Рейс {new_data[i][1]}:\n" + changes_in_row + "\n"
             i += 1
-            continue
-        if i > len(old_data) - 1:
-            old_data.append(["", "", "", ""])
-
-        if new_data[i][1] != old_data[i][1]:
-
-            if new_data[i][0].lower().count("новый год"):
-                old_data.insert(i, new_data[i])
-                i += 1
-                continue
-            if new_data[i][0] == "" and new_data[i][1] == "" and new_data[i][2] == "" and new_data[i][3] == "":
-                old_data.insert(i, new_data[i])
-                i += 1
-                continue
-
-            # убираем удаленную строку
-            if new_data[i][0] != old_data[i][0] and i < len(old_data) - 1 and new_data[i][0] == old_data[i + 1][0]:
-                changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Рейс удален\n\n"
-                del old_data[i]
-                continue
-            # Добавляем новую строку если это новый рейс
-            if new_data[i][3] == "":
-                old_data.insert(i, new_data[i])
-                changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Добавлен доп. рейс на {new_data[i][1]}\n\n"
-                i += 1
-                continue
-
-        if new_data[i][3] != old_data[i][3]:
-            changes_in_row += f"- Изменен отель c {old_data[i][3]} на {new_data[i][3]}\n"
-        if new_data[i][2] != old_data[i][2]:
-            changes_in_row += f"- Изменилось количество человек - {new_data[i][2]}\n"
-        if changes_in_row != "":
-            changes += f"Группа {new_data[i][0]} / Рейс {new_data[i][1]}:\n" + changes_in_row + "\n"
-        i += 1
-    return changes
+        return changes
+    except IndexError:
+        return f"Ошибка в строке {i}"
