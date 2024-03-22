@@ -6,12 +6,10 @@ on:
 
 jobs:
   build:
-    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: build docker image
-        uses: appleboy/scp-action@v0.1.7
         run: |
           docker build --no-cache -t demorey/tur_region_bot:v1 .
           docker save -o tur_region_bot.tar demorey/tur_region_bot:v1
