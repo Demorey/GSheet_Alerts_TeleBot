@@ -1,4 +1,4 @@
-FROM python:3.10-slim-buster
+FROM python:3.11.6-slim-bullseye
 COPY . ./tur_region_bot
 WORKDIR /tur_region_bot
 COPY requirements.txt .
