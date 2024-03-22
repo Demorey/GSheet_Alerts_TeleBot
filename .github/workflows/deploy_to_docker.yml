@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: build docker image1
+      - name: build docker image
         run: |
           docker build --no-cache -t demorey/tur_region_bot:v1 .
           docker save -o tur_region_bot.tar demorey/tur_region_bot:v1
@@ -22,7 +22,6 @@ jobs:
           port: 22
           source: tur_region_bot.tar
           target: /docker_containers/tur_region_bot/build
-
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -44,4 +43,3 @@ jobs:
                     -v ./data:/tur_region_bot/data \
                     demorey/tur_region_bot:v1
                     rm -rf build/
-                  
