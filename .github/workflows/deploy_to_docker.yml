@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: build docker image
         run: |
           docker build --no-cache -t demorey/tur_region_bot:v1 .
@@ -30,16 +30,16 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: 22
           script: |
-                    cd /docker_containers/tur_region_bot
-                    docker stop tur_region_bot
-                    docker rm tur_region_bot
-                    docker rmi demorey/tur_region_bot:v1
-                    docker load -i ./build/tur_region_bot.tar
-                    docker run -dit \
-                    --name tur_region_bot \
-                    --restart always \
-                    -P \
-                    -v ./logs:/tur_region_bot/logs \
-                    -v ./data:/tur_region_bot/data \
-                    demorey/tur_region_bot:v1
-                    rm -rf build/
+            cd /docker_containers/tur_region_bot
+            docker stop tur_region_bot
+            docker rm tur_region_bot
+            docker rmi demorey/tur_region_bot:v1
+            docker load -i ./build/tur_region_bot.tar
+            docker run -dit \
+            --name tur_region_bot \
+            --restart always \
+            -P \
+            -v ./logs:/tur_region_bot/logs \
+            -v ./data:/tur_region_bot/data \
+            demorey/tur_region_bot:v1
+            rm -rf build/
