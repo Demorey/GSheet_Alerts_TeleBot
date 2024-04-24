@@ -152,6 +152,7 @@ async def changes_check(old_data: list, new_data: list) -> str:
                         break
                     if new_data[i][3] == "":
                         continue
+                i += 1
                 continue
 
             if new_data[i][1] != old_data[i][1]:
