@@ -137,13 +137,6 @@ async def changes_check(old_data: list, new_data: list) -> str:
             if i > len(old_data) - 1:
                 old_data.append(["", "", "", ""])
 
-            # Добавляем новую строку если это новый рейс
-            if new_data[i][3] == "":
-                old_data.insert(i, list(new_data[i]))
-                changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Добавлен доп. рейс на {new_data[i][1]}\n\n"
-                i += 1
-                continue
-
             if new_data[i][0] != old_data[i][0] and i < len(old_data) - 1:
                 for j in range(i, len(old_data)):
                     if new_data[i][0] == old_data[j][0]:
@@ -152,6 +145,12 @@ async def changes_check(old_data: list, new_data: list) -> str:
                         break
                     if new_data[i][3] == "":
                         continue
+                continue
+
+            # Добавляем новую строку если это новый рейс
+            if new_data[i][0] != old_data[i][0] and new_data[i][3] == "":
+                old_data.insert(i, list(new_data[i]))
+                changes += f"Группа {old_data[i][0]} / Рейс {old_data[i][1]}:\n- Добавлен доп. рейс на {new_data[i][1]}\n\n"
                 i += 1
                 continue
 
