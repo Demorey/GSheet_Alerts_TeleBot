@@ -122,7 +122,7 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> str | None | list[Any
 
 async def changes_check(old_data: list, new_data: list) -> str:
     changes = ""
-    i = 283
+    i = 0
     # new_data[i][0] - имя группы
     # new_data[i][1] - дата заселения
     # new_data[i][2] - количество человек
