@@ -122,7 +122,7 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> str | None | list[Any
 
 async def changes_check(old_data: list, new_data: list) -> str:
     changes = ""
-    i = 0
+    i = 283
     # new_data[i][0] - имя группы
     # new_data[i][1] - дата заселения
     # new_data[i][2] - количество человек
@@ -131,11 +131,26 @@ async def changes_check(old_data: list, new_data: list) -> str:
         while i < len(new_data):
             changes_in_row = ""
 
-            if new_data[i][1] == "":
+            if list(new_data[i]) == old_data[i]:
                 i += 1
                 continue
-            if i > len(old_data) - 1:
+
+            if new_data[i][0].lower().count("новый год"):
+                if old_data[i][0].lower().count("новый год"):
+                    i += 1
+                    continue
+                else:
+                    old_data.insert(i, new_data[i])
+                    i += 1
+                    continue
+
+            if new_data[i][1] == "":
+                old_data.insert(i, list(new_data[i]))
+                i += 1
+                continue
+            if i > len(old_data):
                 old_data.append(["", "", "", ""])
+                continue
 
             if new_data[i][0] != old_data[i][0] and i < len(old_data) - 1:
                 # Добавляем новую строку если это новый рейс
@@ -154,10 +169,6 @@ async def changes_check(old_data: list, new_data: list) -> str:
 
             if new_data[i][1] != old_data[i][1]:
 
-                if new_data[i][0].lower().count("новый год"):
-                    old_data.insert(i, new_data[i])
-                    i += 1
-                    continue
                 if new_data[i][0] == "" and new_data[i][1] == "" and new_data[i][2] == "" and new_data[i][3] == "":
                     old_data.insert(i, new_data[i])
                     i += 1
@@ -187,7 +198,9 @@ async def changes_check(old_data: list, new_data: list) -> str:
                 changes_in_row += f"- Изменилось количество человек - {new_data[i][2]}\n"
             if changes_in_row != "":
                 changes += f"Группа {new_data[i][0]} / Рейс {new_data[i][1]}:\n" + changes_in_row + "\n"
+
             i += 1
         return changes
-    except IndexError:
+    except IndexError as e:
+        print(e)
         return f"Ошибка в строке {i}"
