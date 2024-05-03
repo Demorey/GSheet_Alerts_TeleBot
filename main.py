@@ -30,15 +30,14 @@ async def task():
             spreadsheet_list = spreadsheet_data["SPREADSHEETS"]
             for i, spreadsheet in enumerate(spreadsheet_list):
                 result = await spreadsheet_check(gc, i, spreadsheet, spreadsheet_data)
-                if not result:
+                if not result["changes"]:
                     continue
-                if result.startswith("Ошибка"):
-                    await notification_sender.send_notification(ADMIN_ID, result, spreadsheet["url"])
-                else:
-                    group_id = spreadsheet.get('group_id')
-                    if not group_id:
-                        group_id = GROUP_ID
-                    await notification_sender.send_notification(group_id, result, spreadsheet["url"])
+                if result["error"]:
+                    await notification_sender.send_notification(ADMIN_ID, result["error"], spreadsheet["url"])
+                group_id = spreadsheet.get('group_id')
+                if not group_id:
+                    group_id = GROUP_ID
+                await notification_sender.send_notification(group_id, result["changes"], spreadsheet["url"])
             await asyncio.sleep(TIMER)
         except TimeoutError:
             await asyncio.sleep(600)

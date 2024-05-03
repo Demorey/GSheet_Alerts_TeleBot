@@ -2,24 +2,25 @@ import json
 import logging
 from itertools import zip_longest
 from time import sleep
-from typing import List, Any
+from typing import Any
 
 import gspread.exceptions
 
 
-async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, spreadsheet_data: dict) -> str | None:
+async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, spreadsheet_data: dict) -> \
+        dict[str, str | None]:
+    error_msg = None
     sheet_name = await spreadsheet_get_name(gc, spreadsheet)
-    new_data = await spreadsheet_get_hotels(gc, spreadsheet)
+    new_data = await spreadsheet_get_rows(gc, spreadsheet)
     worksheet_name = await spreadsheet_get_worksheet_name(gc, spreadsheet)
     if type(new_data) is str and type(sheet_name) is str:
         result = new_data
-        return result
+        return {"error": error_msg, "changes": result}
     result = None
     if spreadsheet.get("data"):
-        changes = await changes_check(spreadsheet["data"], new_data)
-        if changes.startswith("Ошибка"):
-            result = f"Ошибка в таблице {sheet_name}\n" + changes + "\n\n"
-            return result
+        error, changes = await changes_check(spreadsheet["data"], new_data)
+        if error:
+            error_msg = f"Ошибка в таблице {sheet_name}\n" + error + "\n\n"
         if (changes != "" and
                 worksheet_name == spreadsheet_data["SPREADSHEETS"][spreadsheet_index].get("worksheet_name",
                                                                                           worksheet_name)):
@@ -31,12 +32,11 @@ async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, sprea
     with open('data/spreadsheets_data.json', 'w', encoding='utf-8') as f:
         json.dump(spreadsheet_data, f, ensure_ascii=False, indent=2)
 
-    return result
+    return {"error": error_msg, "changes": result}
 
 
 async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
     sheet = None
-    sheet_name = None
     for attempt_no in range(3):
         try:
             sheet = gc.open_by_url(spreadsheet['url'])
@@ -65,7 +65,7 @@ async def spreadsheet_get_worksheet_name(gc, spreadsheet: dict) -> str:
     return worksheet_name
 
 
-async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> str | None | list[Any]:
+async def spreadsheet_get_rows(gc, spreadsheet: dict) -> str | None | list[Any]:
     sheet = None
     worksheet = None
     worksheet_col_names = []
@@ -120,8 +120,9 @@ async def spreadsheet_get_hotels(gc, spreadsheet: dict) -> str | None | list[Any
         return "Ошибка при запросе к Google API"
 
 
-async def changes_check(old_data: list, new_data: list) -> str:
+async def changes_check(old_data: list, new_data: list) -> (str | None, str):
     changes = ""
+    error = None
     i = 0
     # new_data[i][0] - имя группы
     # new_data[i][1] - дата заселения
@@ -134,15 +135,6 @@ async def changes_check(old_data: list, new_data: list) -> str:
             if list(new_data[i]) == old_data[i]:
                 i += 1
                 continue
-
-            if new_data[i][0].lower().count("новый год"):
-                if old_data[i][0].lower().count("новый год"):
-                    i += 1
-                    continue
-                else:
-                    old_data.insert(i, new_data[i])
-                    i += 1
-                    continue
 
             if new_data[i][1] == "":
                 old_data.insert(i, list(new_data[i]))
@@ -200,7 +192,6 @@ async def changes_check(old_data: list, new_data: list) -> str:
                 changes += f"Группа {new_data[i][0]} / Рейс {new_data[i][1]}:\n" + changes_in_row + "\n"
 
             i += 1
-        return changes
-    except IndexError as e:
-        print(e)
-        return f"Ошибка в строке {i}"
+    except IndexError:
+        error = f"Ошибка в строке {i}"
+    return error, changes
