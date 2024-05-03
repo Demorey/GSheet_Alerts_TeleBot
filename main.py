@@ -24,20 +24,17 @@ async def task():
     while True:
         try:
             gc = gspread.service_account(filename='data/service_acc.json')
-
             with open('data/spreadsheets_data.json', 'r', encoding='utf-8') as f:
                 spreadsheet_data = json.load(f)
             spreadsheet_list = spreadsheet_data["SPREADSHEETS"]
             for i, spreadsheet in enumerate(spreadsheet_list):
                 result = await spreadsheet_check(gc, i, spreadsheet, spreadsheet_data)
-                if not result["changes"]:
+                if not result["changes"] and not result["error"]:
                     continue
-                if result["error"]:
-                    await notification_sender.send_notification(ADMIN_ID, result["error"], spreadsheet["url"])
                 group_id = spreadsheet.get('group_id')
                 if not group_id:
                     group_id = GROUP_ID
-                await notification_sender.send_notification(group_id, result["changes"], spreadsheet["url"])
+                await notification_sender.send_notification(group_id, result, spreadsheet["url"])
             await asyncio.sleep(TIMER)
         except TimeoutError:
             await asyncio.sleep(600)
