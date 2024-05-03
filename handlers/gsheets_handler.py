@@ -184,6 +184,15 @@ async def changes_check(old_data: list, new_data: list) -> (str | None, str):
                             continue
                     continue
 
+            if new_data[i][0].lower().count("новый год"):
+                if old_data[i][0].lower().count("новый год"):
+                    i += 1
+                    continue
+                else:
+                    old_data.insert(i, new_data[i])
+                    i += 1
+                    continue
+
             if new_data[i][3] != old_data[i][3]:
                 changes_in_row += f"- Изменен отель c {old_data[i][3]} на {new_data[i][3]}\n"
             if new_data[i][2] != old_data[i][2]:
