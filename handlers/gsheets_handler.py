@@ -110,7 +110,7 @@ async def spreadsheet_get_rows(gc, spreadsheet: dict) -> str | None | list[Any]:
 
 async def changes_check(old_data: list, new_data: list) -> (str | None, str):
     changes = ""
-    error = 'None'
+    error = None
     i = 0
     # new_data[i][0] - имя группы
     # new_data[i][1] - дата заселения
