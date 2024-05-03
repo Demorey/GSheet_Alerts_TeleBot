@@ -10,24 +10,24 @@ import gspread.exceptions
 async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, spreadsheet_data: dict) -> \
         dict[str, str | None]:
     error_msg = None
-    sheet_name = await spreadsheet_get_name(gc, spreadsheet)
+    sheet_data = await spreadsheet_get_data(gc, spreadsheet)
     new_data = await spreadsheet_get_rows(gc, spreadsheet)
-    worksheet_name = await spreadsheet_get_worksheet_name(gc, spreadsheet)
-    if type(new_data) is str and type(sheet_name) is str:
+    if type(new_data) is str and type(sheet_data["sheet_name"]) is str:
         result = new_data
         return {"error": error_msg, "changes": result}
     result = None
     if spreadsheet.get("data"):
         error, changes = await changes_check(spreadsheet["data"], new_data)
         if error:
-            error_msg = f"Ошибка в таблице {sheet_name}\n" + error + "\n\n"
+            error_msg = f"Ошибка в таблице {sheet_data['sheet_name']}\n" + error + "\n\n"
         if (changes != "" and
-                worksheet_name == spreadsheet_data["SPREADSHEETS"][spreadsheet_index].get("worksheet_name",
-                                                                                          worksheet_name)):
-            result = "<b>⚠️ Изменения в таблице: " + sheet_name + "</b>\n\n" + changes
+                sheet_data["worksheet_name"] == spreadsheet_data["SPREADSHEETS"][spreadsheet_index].get(
+                    "worksheet_name",
+                    sheet_data["worksheet_name"])):
+            result = "<b>⚠️ Изменения в таблице: " + sheet_data["sheet_name"] + "</b>\n\n" + changes
 
-    spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["name"] = sheet_name
-    spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["worksheet_name"] = worksheet_name
+    spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["name"] = sheet_data["sheet_name"]
+    spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["worksheet_name"] = sheet_data["worksheet_name"]
     spreadsheet_data["SPREADSHEETS"][spreadsheet_index]["data"] = new_data
     with open('data/spreadsheets_data.json', 'w', encoding='utf-8') as f:
         json.dump(spreadsheet_data, f, ensure_ascii=False, indent=2)
@@ -35,14 +35,15 @@ async def spreadsheet_check(gc, spreadsheet_index: int, spreadsheet: dict, sprea
     return {"error": error_msg, "changes": result}
 
 
-async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
+async def spreadsheet_get_data(gc, spreadsheet: dict) -> dict[str, Any] | str:
+    sheet_data = {}
     sheet = None
     for attempt_no in range(3):
         try:
             sheet = gc.open_by_url(spreadsheet['url'])
-            sheet_name = sheet.title
-            if sheet_name:
-                return sheet_name
+            sheet_data["sheet_name"] = sheet.title
+            sheet_data["worksheet_name"] = sheet.sheet1.title
+            return sheet_data
 
         except gspread.exceptions.APIError:
             if attempt_no < 3:
@@ -50,19 +51,6 @@ async def spreadsheet_get_name(gc, spreadsheet: dict) -> str:
     if not sheet:
         logging.error("Ошибка при запросе к Google API")
         return "Ошибка при запросе к Google API"
-
-
-async def spreadsheet_get_worksheet_name(gc, spreadsheet: dict) -> str:
-    worksheet_name = None
-    for attempt_no in range(3):
-        try:
-            sheet = gc.open_by_url(spreadsheet['url'])
-            worksheet_name = sheet.sheet1.title
-            break
-        except gspread.exceptions.APIError:
-            if attempt_no < 3:
-                sleep(30 * (1 + attempt_no))
-    return worksheet_name
 
 
 async def spreadsheet_get_rows(gc, spreadsheet: dict) -> str | None | list[Any]:
@@ -122,7 +110,7 @@ async def spreadsheet_get_rows(gc, spreadsheet: dict) -> str | None | list[Any]:
 
 async def changes_check(old_data: list, new_data: list) -> (str | None, str):
     changes = ""
-    error = None
+    error = 'None'
     i = 0
     # new_data[i][0] - имя группы
     # new_data[i][1] - дата заселения
