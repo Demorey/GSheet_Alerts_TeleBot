@@ -14,6 +14,16 @@ async def send_notification(group_id: str, data: dict, url: str):
         text = data["changes"]
         if group_id != ADMIN_ID:
             mailing_list.append(ADMIN_ID)
+        text_split = text.split('\n\n')
+        if len(text_split) > 20:
+            text_split = text_split[:6]
+            text_with_commentary = '\n\n'.join(text_split)
+            text_with_commentary += ('\n\n<b>Внимание!</b>\nИзменениям в таблице подверглись более 20 '
+                                     'строк.\nОтправлено только 5 первых изменений.\nПросьба перейти в таблицу '
+                                     'для просмотра всех изменений.')
+            await bot.send_message(group_id, text_with_commentary, parse_mode="HTML",
+                                   reply_markup=reply_markup.as_markup())
+            return
         if len(text) > 4096:
             for x in range(0, len(text), 4096):
                 for group_id in mailing_list:
